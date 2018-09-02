@@ -22,9 +22,6 @@ class Interface:
         """Intitializer function"""
         logging.debug("Initializing the interface.")
         self.cad = pifacecad.PiFaceCAD()
-        self.cad.lcd.backlight_on()
-        self.cad.lcd.cursor_off()
-        self.cad.lcd.blink_off()
         self.current_page = 1
         self.pages = {
                 1: self.show_time,
@@ -40,12 +37,12 @@ class Interface:
 
         self.listener = pifacecad.SwitchEventListener(chip=self.cad)
         self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
         self.scheduler.add_job(
                 self.update,
                 "interval",
-                seconds=60,
+                seconds=10,
                 id="update_job")
-        self.scheduler.start()
         for i in range(6):
             self.listener.register(i,
                     pifacecad.IODIR_FALLING_EDGE,
@@ -57,6 +54,7 @@ class Interface:
         self.listener.register(7,
                 pifacecad.IODIR_FALLING_EDGE,
                 self.page_right)
+        self.update()
         logging.debug("Activating the listener.")
         self.listener.activate()
 
@@ -139,5 +137,13 @@ class Interface:
                     self.current_page, inp))
 
     def update(self, *args):
+        self.cad.lcd.blink_off()
+        self.cad.lcd.cursor_off()
+        self.cad.lcd.home()
+        now = datetime.datetime.now()
+        if 6 <= now.hour <= 23:
+            self.cad.lcd.backlight_on()
+        else:
+            self.cad.lcd.backlight_off()
         self.show_page(self.current_page)
 
