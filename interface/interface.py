@@ -21,7 +21,9 @@ class Interface:
         """Intitializer function"""
         logging.debug("Initializing the interface.")
         self.cad = pifacecad.PiFaceCAD()
+        self.listener = pifacecad.SwitchEventListener(chip=self.cad)
         self.cad.lcd.backlight_on()
+        self.cad.lcd.viewpoint_corner = 150
         self.cad.lcd.cursor_off()
         self.cad.lcd.blink_off()
         self.current_page = 1
@@ -30,23 +32,30 @@ class Interface:
                 2: self.show_stats,
                 3: self.show_ip
                 }
+
         logging.debug("Polling for inputs!")
         self.last_page = self.current_page
         # five minutes
-        self.cached_dict = expiringdict.ExpiringDict(max_len = 100, max_age_seconds=300)
-        self.poll()
+        self.cached_dict = expiringdict.ExpiringDict(
+                                    max_len=100,
+                                    max_age_seconds=300)
+        for i in range(6):
+            self.listener.register(
+                    i,
+                    pifacecad.IODIR_FALLING_EDGE,
+                    logging.debug)
+        self.listener.register(
+                6,
+                pifacecad.IODIR_FALLING_EDGE,
+                self.page_left)
+        self.listener.register(
+                7,
+                pifacecad.IODIR_FALLING_EDGE,
+                self.page_right)
+        self.listener.activate()
 
     def run_cmd(self, cmd):
         return subprocess.check_output(cmd, shell=True).decode("utf-8")
-
-    def poll(self):
-        """Constantly polls for input and shows
-        the corresponding page"""
-        while True:
-            time.sleep(0.15)
-            switch_value = self.cad.switch_port.value
-            logging.debug("Input: {}".format(switch_value))
-            self.react(switch_value)
 
     def react(self, switch_value):
         """Reacts to the corresponding page."""
@@ -59,7 +68,7 @@ class Interface:
         else:
             self.show_page(self.current_page)
 
-    def page_left(self):
+    def page_left(self, _):
         logging.debug("Turning page left!")
         if self.current_page == 1:
             self.current_page = len(self.pages.keys())
@@ -67,7 +76,7 @@ class Interface:
             self.current_page -= 1
         self.show_page(self.current_page)
 
-    def page_right(self):
+    def page_right(self, _):
         logging.debug("Turning page right!")
         if self.current_page == len(self.pages.keys()):
             self.current_page = 1
