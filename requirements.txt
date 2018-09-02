@@ -1,9 +1,11 @@
+APScheduler==3.5.3
 beautifulsoup4==4.6.3
 bs4==0.0.1
 certifi==2018.8.24
 chardet==3.0.4
 Cython==0.28.2
 dev==0.4.0
+expiringdict==1.1.4
 idna==2.7
 lxml==4.2.4
 numpy==1.15.1
@@ -18,4 +20,5 @@ requests==2.19.1
 six==1.11.0
 SQLAlchemy==1.2.11
 sqlsoup==0.9.1
+tzlocal==1.5.1
 urllib3==1.23
