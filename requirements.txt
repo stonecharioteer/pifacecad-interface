@@ -8,7 +8,7 @@ dev==0.4.0
 expiringdict==1.1.4
 idna==2.7
 lxml==4.2.4
-numpy==1.15.1
+numpy==1.22.0
 pandas==0.23.4
 pifacecad==2.0.8
 pifacecommon==4.2.1
